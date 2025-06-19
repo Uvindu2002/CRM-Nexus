@@ -22,7 +22,8 @@ import {
   Activity,
   Briefcase,
   ClipboardList,
-  MessageSquare
+  MessageSquare,
+  Menu
 } from 'lucide-react';
 
 interface CRMSidebarProps {
@@ -84,11 +85,11 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
   ];
 
   return (
-    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-72'} flex flex-col h-full`}>
+    <div className={`bg-white border-r border-gray-200 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-72'} flex flex-col h-full`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className={`border-b border-gray-200 ${isCollapsed ? 'p-2' : 'p-4'}`}>
         <div className="flex items-center justify-between">
-          {!isCollapsed && (
+          {!isCollapsed ? (
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-white" />
@@ -98,19 +99,38 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
                 <p className="text-xs text-blue-600">Sales Management</p>
               </div>
             </div>
+          ) : (
+            <div className="w-full flex flex-col items-center gap-2">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-white" />
+              </div>
+              {/* Expand Button inside collapsed sidebar */}
+              <button
+                onClick={() => setIsCollapsed(false)}
+                className="w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-700 rounded-lg transition-all duration-200 flex items-center justify-center group"
+                title="Expand Sidebar"
+              >
+                <ChevronRight className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              </button>
+            </div>
           )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 rounded-md hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
+          
+          {/* Collapse Button - Only shown when expanded */}
+          {!isCollapsed && (
+            <button
+              onClick={() => setIsCollapsed(true)}
+              className="w-8 h-8 bg-gray-100 hover:bg-blue-100 text-gray-600 hover:text-blue-600 rounded-lg transition-all duration-200 flex items-center justify-center group"
+              title="Collapse Sidebar"
+            >
+              <ChevronLeft className="w-4 h-4 group-hover:scale-110 transition-transform" />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Quick Stats */}
       {!isCollapsed && (
-        <div className="p-4 bg-blue-50 border-b border-blue-100">
+        <div className="p-2 bg-blue-50 border-b border-blue-100">
           <div className="grid grid-cols-2 gap-3 text-center">
             <div className="bg-white rounded-lg p-3 shadow-sm">
               <div className="text-2xl font-bold text-blue-600">$47K</div>
@@ -138,15 +158,16 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
         </div>
       )}
 
+      
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto py-4">
+        <nav className="space-y-6">
           {menuSections.map((section) => (
-            <div key={section.title}>
+            <div key={section.title} className={isCollapsed ? 'px-2' : 'px-4'}>
               {!isCollapsed && (
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                <h2 className="mb-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   {section.title}
-                </h3>
+                </h2>
               )}
               <div className="space-y-1">
                 {section.items.map((item) => {
@@ -155,23 +176,39 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
                   
                   return (
                     <button
-                      key={item.id}                      onClick={() => onMenuSelect(item.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 group ${
+                      key={item.id}
+                      onClick={() => onMenuSelect(item.id)}
+                      className={`w-full flex items-center ${
+                        isCollapsed ? 'justify-center' : 'gap-3'
+                      } ${
+                        isCollapsed ? 'px-2 py-3' : 'px-3 py-2.5'
+                      } rounded-lg text-left transition-all duration-200 group ${
                         isActive 
                           ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm' 
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }${
+                        isCollapsed ? ' mx-2' : ''
                       }`}
-                      title={isCollapsed ? item.label : ''}
+                      title={isCollapsed ? `${item.label}${item.badge ? ` (${item.badge})` : ''}` : ''}
                     >
-                      <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-blue-600' : ''}`} />
+                      <div className="relative">
+                        <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-blue-600' : ''}`} />
+                        {item.badge && isCollapsed && (
+                          <div className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center border-2 border-white">
+                            <span className="text-[10px] font-bold text-white">
+                              {parseInt(item.badge) > 99 ? '99+' : item.badge}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                       {!isCollapsed && (
                         <>
                           <span className="font-medium flex-1">{item.label}</span>
                           {item.badge && (
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                               isActive 
                                 ? 'bg-blue-600 text-white' 
-                                : 'bg-gray-200 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700'
+                                : 'bg-blue-100 text-blue-600'
                             }`}>
                               {item.badge}
                             </span>
@@ -184,11 +221,11 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
               </div>
             </div>
           ))}
-        </div>
-      </nav>
+        </nav>
+      </div>
 
-      {/* Bottom Section */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
+      {/* Bottom section */}
+      <div className={`border-t border-gray-200 ${isCollapsed ? 'p-2' : 'p-4'}`}>
         {/* User Profile */}
         {!isCollapsed && (
           <div className="mb-4 p-3 bg-white rounded-lg shadow-sm border border-gray-100">
@@ -208,6 +245,18 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
           </div>
         )}
 
+        {/* Collapsed User Avatar */}
+        {isCollapsed && (
+          <div className="mb-3 flex justify-center">
+            <div className="relative">
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></div>
+            </div>
+          </div>
+        )}
+
         {/* Bottom Menu Items */}
         <div className="space-y-1">
           {bottomItems.map((item) => {
@@ -216,7 +265,9 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
             return (
               <button
                 key={item.id}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                className={`w-full flex items-center ${
+                  isCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-2'
+                } rounded-lg text-left transition-colors ${
                   item.id === 'logout' 
                     ? 'text-red-600 hover:bg-red-50 hover:text-red-700' 
                     : 'text-gray-600 hover:bg-white hover:text-gray-900'
