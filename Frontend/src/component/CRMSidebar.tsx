@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   BarChart3, 
   Users, 
@@ -22,17 +23,87 @@ import {
   Activity,
   Briefcase,
   ClipboardList,
-  MessageSquare,
-  Menu
+  MessageSquare
 } from 'lucide-react';
 
 interface CRMSidebarProps {
-  onMenuSelect: (menuId: string) => void;
-  activeItem: string;
+  onMenuSelect?: (menuId: string) => void;
+  activeItem?: string;
 }
 
 const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get active item from current route if not provided as prop
+  const getCurrentActiveItem = () => {
+    if (activeItem) return activeItem;
+    
+    const path = location.pathname;
+    if (path.includes('/dashboard')) return 'dashboard';
+    if (path.includes('/dealpipeline')) return 'pipeline';
+    if (path.includes('/leads')) return 'leads';
+    if (path.includes('/opportunities')) return 'opportunities';
+    if (path.includes('/deals')) return 'deals';
+    if (path.includes('/contacts')) return 'contacts';
+    if (path.includes('/accounts')) return 'accounts';
+    if (path.includes('/companies')) return 'companies';
+    if (path.includes('/emails')) return 'emails';
+    if (path.includes('/calls')) return 'calls';
+    if (path.includes('/messages')) return 'messages';
+    if (path.includes('/calendar')) return 'calendar';
+    if (path.includes('/tasks')) return 'tasks';
+    if (path.includes('/reports')) return 'reports';
+    if (path.includes('/analytics')) return 'analytics';
+    if (path.includes('/activity')) return 'activity';
+    if (path.includes('/settings')) return 'settings';
+    if (path.includes('/help')) return 'help';
+    return 'dashboard';
+  };
+
+  const currentActiveItem = getCurrentActiveItem();
+
+  // Route mapping for navigation
+  const getRouteForMenuItem = (menuId: string) => {
+    const routes: Record<string, string> = {
+      'dashboard': '/dashboard',
+      'pipeline': '/dealpipeline',
+      'deals': '/deals',
+      'leads': '/leads',
+      'opportunities': '/opportunities',
+      'contacts': '/contacts',
+      'accounts': '/accounts',
+      'companies': '/companies',
+      'emails': '/emails',
+      'calls': '/calls',
+      'messages': '/messages',
+      'calendar': '/calendar',
+      'tasks': '/tasks',
+      'reports': '/reports',
+      'analytics': '/analytics',
+      'activity': '/activity',
+      'settings': '/settings',
+      'help': '/help'
+    };
+    return routes[menuId] || '/dashboard';
+  };
+
+  const handleMenuClick = (menuId: string) => {
+    // If onMenuSelect prop is provided, use it (for existing functionality)
+    if (onMenuSelect) {
+      onMenuSelect(menuId);
+    } else {
+      // Otherwise use router navigation
+      const route = getRouteForMenuItem(menuId);
+      navigate(route);
+    }
+  };
+
+  const handleLogout = () => {
+    // Navigate to login page
+    navigate('/login');
+  };
 
   const menuSections = [
     {
@@ -104,7 +175,6 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
               <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-5 h-5 text-white" />
               </div>
-              {/* Expand Button inside collapsed sidebar */}
               <button
                 onClick={() => setIsCollapsed(false)}
                 className="w-8 h-8 bg-blue-100 hover:bg-blue-200 text-blue-600 hover:text-blue-700 rounded-lg transition-all duration-200 flex items-center justify-center group"
@@ -115,7 +185,6 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
             </div>
           )}
           
-          {/* Collapse Button - Only shown when expanded */}
           {!isCollapsed && (
             <button
               onClick={() => setIsCollapsed(true)}
@@ -158,7 +227,6 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
         </div>
       )}
 
-      
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="space-y-6">
@@ -172,12 +240,12 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
               <div className="space-y-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
-                  const isActive = activeItem === item.id;
+                  const isActive = currentActiveItem === item.id;
                   
                   return (
                     <button
                       key={item.id}
-                      onClick={() => onMenuSelect(item.id)}
+                      onClick={() => handleMenuClick(item.id)}
                       className={`w-full flex items-center ${
                         isCollapsed ? 'justify-center' : 'gap-3'
                       } ${
@@ -265,6 +333,7 @@ const CRMSidebar: React.FC<CRMSidebarProps> = ({ onMenuSelect, activeItem }) => 
             return (
               <button
                 key={item.id}
+                onClick={() => item.id === 'logout' ? handleLogout() : handleMenuClick(item.id)}
                 className={`w-full flex items-center ${
                   isCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-2'
                 } rounded-lg text-left transition-colors ${

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Plus, 
   Filter, 
@@ -18,14 +18,11 @@ import {
 
 import CRMSidebar from '../component/CRMSidebar';
 
-
 const Dashboard: React.FC = () => {
-  const [activeMenu, setActiveMenu] = useState('dashboard');
-
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <CRMSidebar onMenuSelect={setActiveMenu} activeItem={activeMenu} />
+      {/* Sidebar - Remove all props, let it handle navigation automatically */}
+      <CRMSidebar />
       
       {/* Main Dashboard Content */}
       <div className="flex-1 overflow-y-auto">
