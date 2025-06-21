@@ -278,8 +278,9 @@ const DealPipeline = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <CRMSidebar />      <div className="flex-1 overflow-hidden">
-        <div className="p-8 h-full overflow-x-auto">
+      <CRMSidebar />
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="flex-shrink-0 p-8 pb-0">
           {/* Header Section */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Deal Pipeline</h1>
@@ -345,32 +346,34 @@ const DealPipeline = () => {
               <Plus className="mr-2" size={16} /> Add Deal
             </Button>
           </div>
-
-          {/* Pipeline Stages */}          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="flex gap-6 pb-8 overflow-x-auto min-w-full w-full">
+        </div>
+        {/* Pipeline Stages */}
+        <div className="flex-1 min-h-0 p-8 pt-0">
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="flex gap-6 h-full overflow-x-auto min-w-full pb-4">
               {filteredStages.map(stage => (
                 <Droppable key={stage.id} droppableId={stage.id}>
-                  {(provided, snapshot) => (                    <div
+                  {(provided, snapshot) => (
+                    <div
                       ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={`p-4 rounded-lg border ${stage.color} ${
+                      {...provided.droppableProps}                      className={`p-3 rounded-lg border ${stage.color} ${
                         snapshot.isDraggingOver ? 'ring-2 ring-blue-400' : ''
-                      } min-w-[350px] w-[350px]`}
-                    >
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
+                      } min-w-[300px] w-[300px] h-full flex flex-col`}
+                    >                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-gray-900">{stage.title}</h3>
-                          <Badge variant="secondary" className="mt-1">
-                            {stage.deals.length} deals
+                          <Badge variant="secondary" className="h-5">
+                            {stage.deals.length}
                           </Badge>
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium text-gray-900">
                             ${getTotalValue(stage.deals).toLocaleString()}
                           </p>
-                          <p className="text-xs text-gray-500">
-                            Target: ${stage.target?.toLocaleString()}
-                          </p>
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <span>Target:</span>
+                            <span className="font-medium">${stage.target?.toLocaleString()}</span>
+                          </div>
                         </div>
                       </div>
 
@@ -385,86 +388,80 @@ const DealPipeline = () => {
                             )}%`,
                           }}
                         />
-                      </div>
-
-                      <div className="space-y-3">
-                        {stage.deals.map((deal, index) => (
-                          <Draggable key={deal.id} draggableId={deal.id} index={index}>
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                {...provided.dragHandleProps}
-                                className={`bg-white rounded-lg shadow-sm transition-all duration-200 
-                                  ${snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''}
-                                  hover:shadow-md`}
-                              >
-                                <Card>
-                                  <CardContent className="p-4">
-                                    <div className="flex justify-between items-start">
-                                      <div className="space-y-1">
-                                        <h4 className="font-medium text-gray-900">{deal.title}</h4>
-                                        <p className="text-sm text-gray-600">{deal.company}</p>
-                                        <div className="flex items-center gap-2 text-sm text-gray-500">
-                                          <DollarSign size={14} />
-                                          <span className="font-medium text-green-600">
-                                            ${deal.value.toLocaleString()}
-                                          </span>
+                      </div>                      <div className="flex-1 overflow-y-auto mt-2">
+                        <div className="space-y-2">
+                          {stage.deals.map((deal, index) => (
+                            <Draggable key={deal.id} draggableId={deal.id} index={index}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className={`bg-white rounded-lg shadow-sm transition-all duration-200 
+                                    ${snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''}
+                                    hover:shadow-md`}
+                                >
+                                  <Card>
+                                    <CardContent className="p-4">
+                                      <div className="flex justify-between items-start">
+                                        <div className="space-y-1">
+                                          <h4 className="font-medium text-gray-900">{deal.title}</h4>
+                                          <p className="text-sm text-gray-600">{deal.company}</p>
+                                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                                            <DollarSign size={14} />
+                                            <span className="font-medium text-green-600">
+                                              ${deal.value.toLocaleString()}
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-3 text-xs text-gray-500">
+                                            <span className="truncate">{deal.company}</span>
+                                            <div className="flex items-center gap-1">
+                                              <User size={12} />
+                                              <span className="truncate">{deal.contact}</span>
+                                            </div>
+                                          </div>
+                                          <div className="mt-2 flex items-center gap-2">
+                                            <div className="flex-1">
+                                              <div className="h-1 bg-gray-100 rounded-full">
+                                                <div
+                                                  className="h-1 rounded-full bg-gradient-to-r from-blue-500 to-green-500"
+                                                  style={{ width: `${deal.probability}%` }}
+                                                />
+                                              </div>
+                                            </div>
+                                            <span className="text-xs font-medium text-gray-700">{deal.probability}%</span>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-6 w-6 p-0"
+                                            onClick={() => {
+                                              setEditingDeal(deal);
+                                              setIsEditDialogOpen(true);
+                                            }}
+                                          >
+                                            <Edit size={12} />
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            onClick={() => handleDeleteDeal(deal.id)}
+                                          >
+                                            <Trash2 size={12} />
+                                          </Button>
                                         </div>
                                       </div>
-                                      <div className="flex gap-1">
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          className="h-8 w-8 p-0"
-                                          onClick={() => {
-                                            setEditingDeal(deal);
-                                            setIsEditDialogOpen(true);
-                                          }}
-                                        >
-                                          <Edit size={14} />
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                          onClick={() => handleDeleteDeal(deal.id)}
-                                        >
-                                          <Trash2 size={14} />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                    <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
-                                      <div className="flex items-center gap-1">
-                                        <User size={14} />
-                                        {deal.contact}
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        <Calendar size={14} />
-                                        {new Date(deal.dueDate).toLocaleDateString()}
-                                      </div>
-                                    </div>
-                                    <div className="mt-3 pt-3 border-t">
-                                      <div className="flex justify-between items-center mb-1">
-                                        <span className="text-sm text-gray-600">Probability</span>
-                                        <span className="text-sm font-medium text-gray-900">
-                                          {deal.probability}%
-                                        </span>
-                                      </div>
-                                      <div className="w-full h-1.5 bg-gray-100 rounded-full">
-                                        <div
-                                          className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-green-500"
-                                          style={{ width: `${deal.probability}%` }}
-                                        />
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
+                                    </CardContent>
+                                  </Card>
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </div>
                       </div>
                     </div>
                   )}
