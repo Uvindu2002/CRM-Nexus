@@ -277,171 +277,282 @@ const DealPipeline = () => {
   }));
 
   return (
-    <div>
-    
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Search deals..."
-              value={searchTerm}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, setSearchTerm)}
-            />
-            <Input
-              type="number"
-              placeholder="Filter by value..."
-              value={filterValue}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, setFilterValue, Number)}
-            />
+    <div className="flex h-screen bg-gray-50">
+      <CRMSidebar />      <div className="flex-1 overflow-hidden">
+        <div className="p-8 h-full overflow-x-auto">
+          {/* Header Section */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">Deal Pipeline</h1>
+            <p className="text-gray-600">Manage and track your sales opportunities</p>
           </div>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="mr-2" /> Add Deal
-          </Button>
-        </div>
 
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-6 gap-4">
-            {filteredStages.map(stage => (
-              <Droppable key={stage.id} droppableId={stage.id}>
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className={`p-4 border rounded ${stage.color}`}
-                  >
-                    <h3 className="font-bold mb-2">{stage.title}</h3>
-                    <p className="text-sm mb-4">
-                      Target: ${stage.target?.toLocaleString()} | Total: ${getTotalValue(stage.deals).toLocaleString()} | Weighted: ${getWeightedValue(stage.deals).toLocaleString()}
-                    </p>
-                    {stage.deals.map((deal, index) => (
-                      <Draggable key={deal.id} draggableId={deal.id} index={index}>
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                          >
-                            <Card className="mb-2">
-                              <CardContent>
-                                <div className="flex justify-between items-center">
-                                  <div>
-                                    <h4 className="font-bold">{deal.title}</h4>
-                                    <p className="text-sm">{deal.company}</p>
-                                    <p className="text-sm text-gray-500">${deal.value.toLocaleString()}</p>
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => {
-                                        setEditingDeal(deal);
-                                        setIsEditDialogOpen(true);
-                                      }}
-                                    >
-                                      <Edit size={16} />
-                                    </Button>
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => handleDeleteDeal(deal.id)}
-                                    >
-                                      <Trash2 size={16} />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            ))}
-          </div>
-        </DragDropContext>
-
-        {/* Add Deal Dialog */}
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Deal</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                placeholder="Title"
-                value={newDeal.title || ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'title')}
-              />
-              <Input
-                type="number"
-                placeholder="Value"
-                value={newDeal.value || ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'value')}
-              />
-              <Input
-                placeholder="Company"
-                value={newDeal.company || ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'company')}
-              />
-              <Input
-                placeholder="Contact"
-                value={newDeal.contact || ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'contact')}
-              />
-              <Input
-                type="date"
-                placeholder="Due Date"
-                value={newDeal.dueDate || ''}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'dueDate')}
-              />
-              <Button onClick={handleAddDeal}>Add Deal</Button>
+          {/* Pipeline Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-medium text-gray-500">Total Deals</h3>
+              <p className="text-2xl font-semibold text-gray-900">
+                {stages.reduce((sum, stage) => sum + stage.deals.length, 0)}
+              </p>
             </div>
-          </DialogContent>
-        </Dialog>
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-medium text-gray-500">Total Value</h3>
+              <p className="text-2xl font-semibold text-green-600">
+                ${stages.reduce((sum, stage) => sum + getTotalValue(stage.deals), 0).toLocaleString()}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-medium text-gray-500">Weighted Value</h3>
+              <p className="text-2xl font-semibold text-blue-600">
+                ${stages.reduce((sum, stage) => sum + getWeightedValue(stage.deals), 0).toLocaleString()}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm p-4">
+              <h3 className="text-sm font-medium text-gray-500">Win Rate</h3>
+              <p className="text-2xl font-semibold text-purple-600">
+                {Math.round((stages.find(s => s.id === 'closed')?.deals.length || 0) / 
+                stages.reduce((sum, stage) => sum + stage.deals.length, 0) * 100)}%
+              </p>
+            </div>
+          </div>
 
-        {/* Edit Deal Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Edit Deal</DialogTitle>
-            </DialogHeader>
-            {editingDeal && (
+          {/* Search and Filters */}
+          <div className="flex justify-between items-center mb-6 gap-4">
+            <div className="flex-1 flex items-center gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input
+                  placeholder="Search deals..."
+                  className="pl-10"
+                  value={searchTerm}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, setSearchTerm)}
+                />
+              </div>
+              <div className="relative w-48">
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                <Input
+                  type="number"
+                  placeholder="Min value..."
+                  className="pl-10"
+                  value={filterValue}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleInputChange(e, setFilterValue, Number)}
+                />
+              </div>
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <Filter size={16} /> More Filters
+              </Button>
+            </div>
+            <Button onClick={() => setIsAddDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="mr-2" size={16} /> Add Deal
+            </Button>
+          </div>
+
+          {/* Pipeline Stages */}          <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="flex gap-6 pb-8 overflow-x-auto min-w-full w-full">
+              {filteredStages.map(stage => (
+                <Droppable key={stage.id} droppableId={stage.id}>
+                  {(provided, snapshot) => (                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`p-4 rounded-lg border ${stage.color} ${
+                        snapshot.isDraggingOver ? 'ring-2 ring-blue-400' : ''
+                      } min-w-[350px] w-[350px]`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-gray-900">{stage.title}</h3>
+                          <Badge variant="secondary" className="mt-1">
+                            {stage.deals.length} deals
+                          </Badge>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-gray-900">
+                            ${getTotalValue(stage.deals).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Target: ${stage.target?.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Progress bar */}
+                      <div className="w-full h-1.5 bg-gray-200 rounded-full mb-4">
+                        <div
+                          className="h-1.5 bg-blue-600 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.min(
+                              (getTotalValue(stage.deals) / (stage.target || 1)) * 100,
+                              100
+                            )}%`,
+                          }}
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        {stage.deals.map((deal, index) => (
+                          <Draggable key={deal.id} draggableId={deal.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={`bg-white rounded-lg shadow-sm transition-all duration-200 
+                                  ${snapshot.isDragging ? 'shadow-lg ring-2 ring-blue-400' : ''}
+                                  hover:shadow-md`}
+                              >
+                                <Card>
+                                  <CardContent className="p-4">
+                                    <div className="flex justify-between items-start">
+                                      <div className="space-y-1">
+                                        <h4 className="font-medium text-gray-900">{deal.title}</h4>
+                                        <p className="text-sm text-gray-600">{deal.company}</p>
+                                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                                          <DollarSign size={14} />
+                                          <span className="font-medium text-green-600">
+                                            ${deal.value.toLocaleString()}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-1">
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-8 w-8 p-0"
+                                          onClick={() => {
+                                            setEditingDeal(deal);
+                                            setIsEditDialogOpen(true);
+                                          }}
+                                        >
+                                          <Edit size={14} />
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          onClick={() => handleDeleteDeal(deal.id)}
+                                        >
+                                          <Trash2 size={14} />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
+                                      <div className="flex items-center gap-1">
+                                        <User size={14} />
+                                        {deal.contact}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Calendar size={14} />
+                                        {new Date(deal.dueDate).toLocaleDateString()}
+                                      </div>
+                                    </div>
+                                    <div className="mt-3 pt-3 border-t">
+                                      <div className="flex justify-between items-center mb-1">
+                                        <span className="text-sm text-gray-600">Probability</span>
+                                        <span className="text-sm font-medium text-gray-900">
+                                          {deal.probability}%
+                                        </span>
+                                      </div>
+                                      <div className="w-full h-1.5 bg-gray-100 rounded-full">
+                                        <div
+                                          className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-green-500"
+                                          style={{ width: `${deal.probability}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    </div>
+                  )}
+                </Droppable>
+              ))}
+            </div>
+          </DragDropContext>
+
+          {/* Add Deal Dialog */}
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Deal</DialogTitle>
+              </DialogHeader>
               <div className="space-y-4">
                 <Input
                   placeholder="Title"
-                  value={editingDeal.title}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'title', true)}
+                  value={newDeal.title || ''}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'title')}
                 />
                 <Input
                   type="number"
                   placeholder="Value"
-                  value={editingDeal.value}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'value', true)}
+                  value={newDeal.value || ''}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'value')}
                 />
                 <Input
                   placeholder="Company"
-                  value={editingDeal.company}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'company', true)}
+                  value={newDeal.company || ''}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'company')}
                 />
                 <Input
                   placeholder="Contact"
-                  value={editingDeal.contact}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'contact', true)}
+                  value={newDeal.contact || ''}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'contact')}
                 />
                 <Input
                   type="date"
                   placeholder="Due Date"
-                  value={editingDeal.dueDate}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'dueDate', true)}
+                  value={newDeal.dueDate || ''}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'dueDate')}
                 />
-                <Button onClick={handleEditDeal}>Save Changes</Button>
+                <Button onClick={handleAddDeal}>Add Deal</Button>
               </div>
-            )}
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+
+          {/* Edit Deal Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit Deal</DialogTitle>
+              </DialogHeader>
+              {editingDeal && (
+                <div className="space-y-4">
+                  <Input
+                    placeholder="Title"
+                    value={editingDeal.title}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'title', true)}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Value"
+                    value={editingDeal.value}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'value', true)}
+                  />
+                  <Input
+                    placeholder="Company"
+                    value={editingDeal.company}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'company', true)}
+                  />
+                  <Input
+                    placeholder="Contact"
+                    value={editingDeal.contact}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'contact', true)}
+                  />
+                  <Input
+                    type="date"
+                    placeholder="Due Date"
+                    value={editingDeal.dueDate}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => handleDealInputChange(e, 'dueDate', true)}
+                  />
+                  <Button onClick={handleEditDeal}>Save Changes</Button>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     </div>
   );
