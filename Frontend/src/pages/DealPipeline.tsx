@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
-import { MoreHorizontal, Plus, DollarSign, Calendar, User, Edit, Trash2, Eye, Filter, Search, ArrowUpDown } from 'lucide-react';
+import { Plus, DollarSign, User, Edit, Trash2, Filter, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -31,8 +30,6 @@ interface Stage {
   color: string;
   target?: number;
 }
-
-type DealStatus = 'active' | 'won' | 'lost';
 
 const probabilityMap: { [key: string]: number } = {
   'lead': 20,
