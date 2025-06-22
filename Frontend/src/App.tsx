@@ -48,7 +48,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dealpipeline" element={<DealPipeline />} />
-        
+         <Route path="/dealpipeline" element={<DealPipeline />} />
         {/* Add all the missing routes */}
         <Route path="/leads" element={<LeadsPage />} />
         <Route path="/opportunities" element={<OpportunitiesPage />} />
